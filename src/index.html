@@ -4,14 +4,95 @@
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri App</title>
+    <title>Tauri Apps</title>
     <script type="module" src="/main.js" defer></script>
   </head>
 
-  <body class="bg-gray-600">
+  <body class="bg-gray-100 px-3 py-2">
     <main class="container">
-      <h1>Welcome to Tauri</h1>
+      <header class="mb-2">
+        <h1 class="text-2xl font-bold">Générateur de tableur pour apogée</h1>
+        <details>
+          <summary>Explications</summary>
+          <p>
+            Le but de ce logiciel est de permettre de générer un fichier .csv
+            plus simple à importer pour la macro Excel à destination d'Apogée à
+            partir de l'export d'un semestre sur Scodoc.
+          </p>
+          <p>
+            Ainsi sont supprimés toutes les colonnes inutiles pour ne garder que
+            celles correspondant à la moyenne de chaque UE.
+          </p>
+          <p>
+            Parallèlement, ce logiciel est agnostique, il fonctionne de la même
+            manière quelque soit le semestre, le parcours ou encore la
+            formation.
+          </p>
+        </details>
+      </header>
 
+      <form action="" method="post" class="flex flex-col gap-5">
+        <fieldset class="p-3 border border-black border-dashed rounded-xl">
+          <legend class="text-xl px-2">Export .txt Apogée</legend>
+          <div class="flex flex-col gap-2 items-center">
+            <p class="text-center">
+              Glissez-déposez l'export .txt généré depuis Apogée
+            </p>
+            <button type="button" class="btn-primary" data-upload-btn='{"accept": "txt", "name": "apogee_text"}'>
+              Sélectionner un fichier
+            </button>
+            <p class="truncate" id="apogee_text"></p>
+            <!-- <label
+              for=""
+              class="btn-primary"
+            >
+              <span>Sélectionner un fichier</span>
+              <input
+                type="file"
+                accept=".txt"
+                class="w-0 h-0 absolute"
+                name="apogee_text"
+                id=""
+              />
+            </label> -->
+          </div>
+        </fieldset>
+
+        <fieldset class="p-3 border border-black border-dashed rounded-xl">
+          <legend class="text-xl px-2">Export semestre Scodoc</legend>
+          <div class="flex flex-col gap-2 items-center">
+            <p class="text-center">
+              Glissez-déposez l'export .csv généré depuis Scodoc
+            </p>
+            <label
+              for=""
+              class="btn-primary"
+            >
+              <span>Sélectionner un fichier</span>
+              <input
+                type="file"
+                accept=".csv"
+                class="w-0 h-0 absolute"
+                name="apogee_text"
+                id=""
+              />
+            </label>
+          </div>
+        </fieldset>
+        <fieldset class="p-3 border border-black border-dashed rounded-xl">
+          <legend class="text-xl px-2">Options</legend>
+          <div class="grid grid-cols-2 gap-2">
+              <label for="bareme">Barème</label>
+              <input type="number" name="bareme" min="1" max="100" value="20" id="bareme">
+              <label for="separateur_csv">Séparateur du fichier csv</label>
+              <select name="separateur_csv" id="separateur_csv">
+                <option value="point_virgule">;</option>
+                <option value="virgule">,</option>
+              </select>
+            </div>
+        </fieldset>
+        <button class="btn-primary" type="submit">Générer</button>
+      </form>
     </main>
   </body>
 </html>

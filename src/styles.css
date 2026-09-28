@@ -1,2 +1,22 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@plugin "@tailwindcss/forms";
 
+
+@layer components {
+  .btn-primary {
+
+    background-color: var(--color-blue-700);
+    border-radius: var(--radius-xl);
+    padding-inline: --spacing(3);
+    padding-block: --spacing(2.5);
+    width: fit-content;
+    color: var(--color-white);
+    text-align: center;
+
+    &:is(:hover, :focus) {
+        background-color: var(--color-blue-900);
+    }
+  }
+}
+
+/* bg-blue-700 hover:bg-blue-900 text-center text-white px-3 py-2.5 w-fit rounded-xl */
