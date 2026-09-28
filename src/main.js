@@ -1,18 +1,17 @@
 import { open } from "@tauri-apps/plugin-dialog";
 
+import {
+  truncate,
+  readTextFile,
+  writeTextFile,
+  BaseDirectory,
+} from '@tauri-apps/plugin-fs';
+
 const { invoke } = window.__TAURI__.core;
-
-let greetInputEl;
-let greetMsgEl;
-
-// async function greet() {
-//   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-//   greetMsgEl.textContent = await invoke("greet", { name: greetInputEl.value });
-// }
 
 const listUploadButtons = document.querySelectorAll("[data-upload-btn]");
 
-const files = {}
+const listFiles = {}
 
 Array.from(listUploadButtons).forEach((button) => {
   button.addEventListener("click", async (e) => {
@@ -32,23 +31,26 @@ Array.from(listUploadButtons).forEach((button) => {
     });
 
     if (file && output) {
-      output.innerHTML = `Fichier sélectionné : <span class="truncate">${file}</span>`;
-      console.log(file);
+      output.innerHTML = `Fichier sélectionné : <span class="">${file}</span>`;
+      listFiles[config.name] = file;
     }
   });
 });
 
 const form = document.querySelector("form");
 
-form.addEventListener("submit", (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
-});
 
-// window.addEventListener("DOMContentLoaded", () => {
-//   greetInputEl = document.querySelector("#greet-input");
-//   greetMsgEl = document.querySelector("#greet-msg");
-//   document.querySelector("#greet-form").addEventListener("submit", (e) => {
-//     e.preventDefault();
-//     greet();
-//   });
-// });
+  const formData = new FormData(form);
+
+  // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+  const res = await invoke("process_form_payload", { 
+    exportApogee: listFiles.export_apogee,
+    exportScodoc: listFiles.export_scodoc,
+    bareme: formData.get("bareme"),
+    separateurCsv: formData.get("separateur_csv"),
+  });
+
+  console.log(res)
+});
