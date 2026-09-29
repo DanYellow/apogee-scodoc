@@ -1,188 +1,202 @@
-import { open } from "@tauri-apps/plugin-dialog";
-import { save } from "@tauri-apps/plugin-dialog";
+import { open, save } from '@tauri-apps/plugin-dialog';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import {
+    getDropZone,
+    resetDragState,
+    getDropZoneConfig,
+} from './assets/scripts/drag-n-drop.utils';
 
 const { invoke } = window.__TAURI__.core;
 
-const listUploadButtons = document.querySelectorAll("[data-upload-btn]");
+const listUploadButtons = document.querySelectorAll('[data-upload-btn]');
 
 const listFiles = {};
-
-Array.from(listUploadButtons).forEach((button) => {
-  button.addEventListener("click", async (e) => {
-    const $el = e.currentTarget;
-    const config = JSON.parse($el.dataset.uploadBtn);
-
-    const output = document.getElementById(config.name);
-
-    const file = await open({
-      multiple: false,
-      filters: [
-        {
-          name: config.name,
-          extensions: [config.accept],
-        },
-      ],
-    });
-
-    if (file && output) {
-      output.innerHTML = `Fichier sélectionné : <span class="">${file}</span>`;
-      listFiles[config.name] = file;
-    }
-  });
-});
-
-const form = document.querySelector("form");
-
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const formData = new FormData(form);
-
-  // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-  const formattedData = await invoke("process_form_payload", {
-    exportApogee: listFiles.export_apogee,
-    exportScodoc: listFiles.export_scodoc,
-    bareme: formData.get("bareme"),
-    separateurCsv: formData.get("separateur_csv"),
-  });
-
-  if (formattedData) {
-    const now = new Date();
-    const nowStr = now.toISOString().slice(0, 10);
-    const nowTimeStr = now
-      .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      .replaceAll(":", "-");
-
-    const outputPath = await save({
-      defaultPath: `export-scodoc-pour-apogee-${nowStr}-${nowTimeStr}.csv`,
-      filters: [
-        {
-          name: "CSV",
-          extensions: ["csv"],
-        },
-      ],
-    });
-
-    await invoke("download_data", {
-      outputPath,
-      csvContent: formattedData,
-    });
-  }
-});
-
-const dropZones = document.querySelectorAll("[data-dropzone]");
-
-const handleDroppedFile = (file) => {};
-
-const handleOverFile = (file) => {};
-
-const isFileValid = (path, allowedExt) => {
-  const extension = path.split(".").pop().toLowerCase();
-
-  return allowedExt.includes(extension);
-};
-
-let activeDropZone = null;
-let listDraggedPaths = [];
-
-function getZoneAtPosition(x, y) {
-  const element = document.elementFromPoint(x, y);
-
-  return element?.closest("[data-dropzone]");
-}
-
 let currentZone = null;
 
+const handleFile = (path, config) => {
+    const output = document.getElementById(config.name);
+
+    if (output) {
+        output.innerHTML = `Fichier sélectionné : <span class="">${path}</span>`;
+        listFiles[config.name] = path;
+    }
+};
+
+Array.from(listUploadButtons).forEach((button) => {
+    button.addEventListener('click', async (e) => {
+        const $el = e.currentTarget;
+        const config = JSON.parse($el.dataset.uploadBtn);
+
+        const file = await open({
+            multiple: false,
+            filters: [
+                {
+                    name: config.name,
+                    extensions: [config.accept],
+                },
+            ],
+        });
+
+        if (file) {
+            handleFile(file, config);
+        }
+    });
+});
+
+const form = document.querySelector('form');
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+
+    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+    const formattedData = await invoke('process_form_payload', {
+        exportApogee: listFiles.export_apogee,
+        exportScodoc: listFiles.export_scodoc,
+        bareme: formData.get('bareme'),
+        separateurCsv: formData.get('separateur_csv'),
+    });
+
+    if (formattedData) {
+        const now = new Date();
+        const nowStr = now.toISOString().slice(0, 10);
+        const nowTimeStr = now
+            .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            .replaceAll(':', '-');
+
+        const outputPath = await save({
+            defaultPath: `export-scodoc-pour-apogee-${nowStr}-${nowTimeStr}.csv`,
+            filters: [
+                {
+                    name: 'CSV',
+                    extensions: ['csv'],
+                },
+            ],
+        });
+
+        await invoke('download_data', {
+            outputPath,
+            csvContent: formattedData,
+        });
+    }
+});
+
+const isFileValid = (path, allowedExt) => {
+    const extension = path.split('.').pop().toLowerCase();
+
+    return allowedExt.includes(extension);
+};
+
+
+
 const setDragOver = (zone) => {
-  if (currentZone === zone || !zone) {
-    return;
-  }
+    if (currentZone === zone) {
+        return;
+    }
 
-  // Remove from previous zone
-  if (currentZone) {
-    currentZone.style.borderColor = "";
-  }
+    // Remove from previous zone
+    if (currentZone) {
+        currentZone.classList.remove('dropzone-valid-file');
+        currentZone.classList.remove('dropzone-not-valid-file');
 
-  // Add to new zone
-  if (zone) {
-    zone.style.borderColor = "var(--color-red-800)";
-  }
+        // currentZone.classList.add("dropzone-valid-file");
+    }
 
-  currentZone = zone;
+    // Add to new zone
+    if (zone) {
+        // zone.style.borderColor = "var(--color-red-800)";
+    }
+
+    currentZone = zone;
 };
 
 const appWindow = getCurrentWindow();
 
-const scaleFactor = await appWindow.scaleFactor();
+let currentFilePath = '';
 
-await appWindow.onDragDropEvent((event) => {
-  const { type } = event.payload;
+const updateDropZone = (position) => {
+    const zone = getDropZone(position);
 
-  if (type === "over") {
-    const { x, y } = event.payload.position;
+    if (zone === currentZone) {
+        return;
+    }
 
-    const rect = document.documentElement.getBoundingClientRect();
+    // Reset previous zone
+    if (currentZone) {
+        currentZone.classList.remove(
+            'dropzone-valid-file',
+            'dropzone-not-valid-file',
+            'shake',
+        );
+    }
 
-    const element = document.elementFromPoint(x - rect.left, y - rect.top);
+    currentZone = zone;
 
-    const zone = element?.closest("[data-dropzone]") ?? null;
+    if (!zone || !currentFilePath) {
+        setDragOver(null);
+        return;
+    }
 
     setDragOver(zone);
-    return;
-  }
 
-  if (type === "drop" || type === "leave") {
-    // setDragOver(null);
-  }
+    const config = getDropZoneConfig(zone);
+
+    if (!config) {
+        return;
+    }
+
+    const isValid = isFileValid(currentFilePath, [config.accept]);
+
+    zone.classList.toggle('dropzone-valid-file', isValid);
+    zone.classList.toggle('dropzone-not-valid-file', !isValid);
+
+    if (!isValid) {
+        zone.classList.remove('shake');
+
+        // Force browser to restart the animation
+        void zone.offsetWidth;
+
+        zone.classList.add('shake');
+    }
+};
+
+await appWindow.onDragDropEvent((event) => {
+    const { type, paths = [], position } = event.payload;
+
+    if (type === 'enter') {
+        currentFilePath = paths[0] ?? null;
+        console.log('Files:', paths);
+
+        updateDropZone(position);
+        return;
+    }
+
+    if (type === 'over') {
+        updateDropZone(position);
+        return;
+    }
+
+    if (type === 'drop') {
+        // console.log("Files:", paths);
+
+        const config = getDropZoneConfig(currentZone);
+        const isValid = isFileValid(currentFilePath, [config.accept]);
+
+        if (isValid) {
+            handleFile(paths[0], config);
+        }
+        // Process the files here
+        // uploadFiles(paths, currentZone);
+
+        resetDragState(currentZone, setDragOver);
+        currentFilePath = null;
+        return;
+    }
+
+    if (type === 'leave') {
+        resetDragState(currentZone, setDragOver);
+        currentFilePath = null;
+    }
 });
-
-// await getCurrentWindow().onDragDropEvent((event) => {
-//   const payload = event.payload;
-
-//   if (payload.type === "enter") {
-//     console.log("Files entered:", payload.paths);
-//   }
-
-//   if (payload.type === "over") {
-//     const zone = getZoneAtPosition(payload.position.x, payload.position.y);
-
-//     listDropZones.forEach((z) => {
-//       z.style.borderColor = "";
-//     });
-
-//     if (zone) {
-//       listDropZones.forEach((z) => {
-//         z.style.borderColor = "var(--color-red-800)";
-//       });
-//     }
-//   }
-
-//   if (payload.type === "drop") {
-//     listDropZones.forEach((z) => {
-//       z.style.borderColor = "";
-//     });
-
-//     const zone = getZoneAtPosition(payload.position.x, payload.position.y);
-
-//     if (!zone) {
-//       console.log("Dropped outside a drop zone");
-//       return;
-//     }
-
-//     const zoneName = zone.dataset.zone;
-//     const files = payload.paths;
-
-//     console.log("Zone:", zoneName);
-//     console.log("Files:", files);
-
-//     // handleFiles(zoneName, files);
-//   }
-
-//   if (payload.type === "leave") {
-//     listDropZones.forEach((z) => {
-//       z.style.borderColor = "";
-//     });
-//   }
-// });
