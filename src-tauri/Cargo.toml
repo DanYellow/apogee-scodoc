@@ -28,6 +28,7 @@ tauri-plugin-fs = "2.6.0"
 tauri-plugin-dialog = "2.8.0"
 regex = "1.13.1"
 csv = "1.4.0"
+indexmap = { version = "2", features = ["serde"] }
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration

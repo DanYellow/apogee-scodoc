@@ -1,24 +1,25 @@
 import { open } from "@tauri-apps/plugin-dialog";
+import { save } from "@tauri-apps/plugin-dialog";
 
 import {
   truncate,
   readTextFile,
   writeTextFile,
   BaseDirectory,
-} from '@tauri-apps/plugin-fs';
+} from "@tauri-apps/plugin-fs";
 
 const { invoke } = window.__TAURI__.core;
 
 const listUploadButtons = document.querySelectorAll("[data-upload-btn]");
 
-const listFiles = {}
+const listFiles = {};
 
 Array.from(listUploadButtons).forEach((button) => {
   button.addEventListener("click", async (e) => {
     const $el = e.currentTarget;
     const config = JSON.parse($el.dataset.uploadBtn);
-    
-    const output = document.getElementById(config.name)
+
+    const output = document.getElementById(config.name);
 
     const file = await open({
       multiple: false,
@@ -45,12 +46,31 @@ form.addEventListener("submit", async (e) => {
   const formData = new FormData(form);
 
   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-  const res = await invoke("process_form_payload", { 
+  const formattedData = await invoke("process_form_payload", {
     exportApogee: listFiles.export_apogee,
     exportScodoc: listFiles.export_scodoc,
     bareme: formData.get("bareme"),
     separateurCsv: formData.get("separateur_csv"),
   });
 
-  console.log(res)
+  if (formattedData) {
+    const now = new Date();
+    const nowStr = now.toISOString().slice(0,10);
+    const nowTimeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}).replaceAll(":", "-");
+
+    const outputPath = await save({
+      defaultPath: `export-scodoc-pour-apogee-${nowStr}-${nowTimeStr}.csv`,
+      filters: [
+        {
+          name: "CSV",
+          extensions: ["csv"],
+        },
+      ],
+    });
+
+    await invoke("download_data", {
+      outputPath,
+      csvContent: formattedData,
+    });
+  }
 });

@@ -2,32 +2,8 @@ import fs from "node:fs";
 
 import Papa from 'papaparse';
 
-
 const STUDENTS_REGEX  = /(\d{8})[\w\t\s\n\/-]+/g;
 const STUDENT_NIP_CODE = /\d{8}/g
-
-const csvmaker = function (data) {
-    // Empty array for storing the values
-    csvRows = [];
-    const headers = Object.keys(data);
-    csvRows.push(headers.join(','));
-
-    const values = Object.values(data).join(',');
-    csvRows.push(values)
-
-    return csvRows.join('\n')
-}
-
-const headerCSV = [
-    "code_nip",
-    "Nom",
-    "Prénom",
-    "UE2.1",
-    "UE2.2",
-    "UE2.3",
-    "UE2.4",
-    "UE2.5",
-].join(',')
 
 const loadApogeeTxtFile = async () => {
     const scodocGradesFileContent = await fs.readFileSync("7W29B2-4 MMI CREA FI S4.tmp.TXT");

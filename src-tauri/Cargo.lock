@@ -53,6 +53,7 @@ version = "0.1.0"
 dependencies = [
  "csv",
  "encoding_rs",
+ "indexmap 2.14.2",
  "regex",
  "serde",
  "serde_json",
