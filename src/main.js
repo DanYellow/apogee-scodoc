@@ -12,8 +12,8 @@ const { invoke } = window.__TAURI__.core;
 
 const listUploadButtons = document.querySelectorAll('[data-upload-btn]');
 
-const errorFormDialog = document.getElementById("error-form-dialog");
-const downloadStartedDialog = document.getElementById("start-download-dialog");
+const errorFormDialog = document.getElementById('error-form-dialog');
+const downloadStartedDialog = document.getElementById('start-download-dialog');
 
 const listFiles = {};
 let currentZone = null;
@@ -36,13 +36,15 @@ Array.from(listUploadButtons).forEach((button) => {
     button.addEventListener('click', async (e) => {
         const $el = e.currentTarget;
         const config = JSON.parse($el.dataset.uploadBtn);
-
+        console.log(config);
         const file = await open({
             multiple: false,
             filters: [
                 {
                     name: config.name,
-                    extensions: [config.accept],
+                    extensions: Array.isArray(config.accept)
+                        ? config.accept
+                        : [config.accept],
                 },
             ],
         });
@@ -69,7 +71,7 @@ form.addEventListener('submit', async (e) => {
 
     const result = FormPayload.safeParse(tauriPayload);
     if (!result.success) {
-        errorFormDialog.showModal()
+        errorFormDialog.showModal();
         return;
     }
 
@@ -93,7 +95,7 @@ form.addEventListener('submit', async (e) => {
             ],
         });
 
-        downloadStartedDialog.showModal()
+        downloadStartedDialog.showModal();
 
         await invoke('download_data', {
             outputPath,
@@ -162,7 +164,10 @@ const updateDropZone = (position) => {
         return;
     }
 
-    const isValid = isFileValid(currentFilePath, [config.accept]);
+    const isValid = isFileValid(
+        currentFilePath,
+        Array.isArray(config.accept) ? config.accept : [config.accept],
+    );
 
     zone.classList.toggle('dropzone-valid-file', isValid);
     zone.classList.toggle('dropzone-not-valid-file', !isValid);
@@ -196,7 +201,10 @@ await appWindow.onDragDropEvent((event) => {
         // console.log("Files:", paths);
 
         const config = getDropZoneConfig(currentZone);
-        const isValid = isFileValid(currentFilePath, [config.accept]);
+        const isValid = isFileValid(
+            currentFilePath,
+            Array.isArray(config.accept) ? config.accept : [config.accept],
+        );
 
         if (isValid) {
             handleFile(paths[0], config);

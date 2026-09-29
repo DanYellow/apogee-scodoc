@@ -4,7 +4,9 @@ use std::{
     collections::HashSet,
     fs::File,
     io::{BufRead, BufReader, Write},
+    path::Path,
 };
+use umya_spreadsheet::{Worksheet};
 
 use csv::{ReaderBuilder, WriterBuilder};
 use encoding_rs::WINDOWS_1252;
@@ -19,15 +21,18 @@ fn extract_student_nip_codes(content: &str) -> Vec<String> {
         .collect()
 }
 
-fn parse_scodoc_csv(export_scodoc: &str, delimiter: u8) -> Result<Vec<IndexMap<String, String>>, String> {
+fn parse_scodoc_csv(
+    csv_data: String,
+    delimiter: u8,
+) -> Result<Vec<IndexMap<String, String>>, String> {
     let columns_to_keep: HashSet<&str> = ["code_nip", "Nom", "Prénom"].into_iter().collect();
 
     let regex_ue = Regex::new(r"^UE\d").map_err(|e| e.to_string())?;
 
     // Open file
-    let file = File::open(export_scodoc).map_err(|e| e.to_string())?;
+    // let file = File::open(export_scodoc).map_err(|e| e.to_string())?;
 
-    let mut buf_reader = BufReader::new(file);
+    let mut buf_reader = BufReader::new(csv_data.as_bytes());
 
     // Skip first line
     let mut first_line = String::new();
@@ -128,6 +133,37 @@ fn compute_data_for_export(
     Ok(result)
 }
 
+fn sheet_to_csv(sheet: &umya_spreadsheet::Worksheet) -> String {
+    let (max_col, max_row) = sheet.highest_column_and_row();
+    let mut csv = String::new();
+
+    for row in 1..=max_row {
+        for col in 1..=max_col {
+            if col > 1 {
+                csv.push(',');
+            }
+
+            let value = sheet
+                .cell((col, row))
+                .map(|cell| cell.value().into_owned())
+                .unwrap_or_default();
+
+            if value.contains([',', '"', '\n', '\r']) {
+                csv.push('"');
+                csv.push_str(&value.replace('"', "\"\""));
+                csv.push('"');
+            } else {
+                csv.push_str(&value);
+            }
+        }
+
+        csv.push('\n');
+    }
+
+    csv
+}
+
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
 #[tauri::command]
@@ -149,8 +185,23 @@ fn process_form_payload(
     };
 
     let nip_codes: Vec<String> = extract_student_nip_codes(&export_apogee_content);
- 
-    let mut filtered_scodoc_data = parse_scodoc_csv(&export_scodoc, separateur_csv.as_ptr() as u8)?;
+
+    let mut csv_data: String;
+    let path = std::path::Path::new(export_scodoc);
+    if path
+        .extension()
+        .map(|s| s.to_ascii_lowercase() == "xlsx")
+        .unwrap_or(false)
+    {
+        let book = umya_spreadsheet::reader::xlsx::read(path).unwrap();
+
+        let sheet = book.sheet(0).unwrap();
+        csv_data = sheet_to_csv(sheet);
+    } else {
+        csv_data = std::fs::read_to_string(export_scodoc).map_err(|e| e.to_string())?;
+    }
+
+    let mut filtered_scodoc_data = parse_scodoc_csv(csv_data, separateur_csv.as_ptr() as u8)?;
 
     filtered_scodoc_data.retain(|row| {
         row.get("code_nip")
@@ -159,8 +210,6 @@ fn process_form_payload(
 
     let bareme_valeur = if bareme.is_empty() { "20" } else { bareme };
     let data_for_export = compute_data_for_export(filtered_scodoc_data, bareme_valeur)?;
-
-    // export_csv(&data_for_export, "testRRR.tmp.csv")?;
 
     let json_string = serde_json::to_string(&data_for_export).map_err(|e| e.to_string())?;
 

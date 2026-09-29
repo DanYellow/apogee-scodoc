@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
     <head>
         <meta charset="UTF-8" />
         <link rel="stylesheet" href="styles.css" />
@@ -64,13 +64,13 @@
                     <legend class="text-xl px-2">Export semestre Scodoc</legend>
                     <div class="flex flex-col gap-2 items-center">
                         <p class="text-center">
-                            Glissez-déposez l'export .csv généré depuis Scodoc
+                            Glissez-déposez l'export .csv ou .xlsx généré depuis Scodoc
                         </p>
                         <p>ou</p>
                         <button
                             type="button"
                             class="btn-primary"
-                            data-upload-btn='{"accept": "csv", "name": "export_scodoc"}'
+                            data-upload-btn='{"accept": ["csv", "xlsx"], "name": "export_scodoc"}'
                         >
                             Sélectionner un fichier
                         </button>
