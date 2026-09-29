@@ -1,82 +1,169 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="styles.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri Apps</title>
-    <script type="module" src="/main.js" defer></script>
-  </head>
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="stylesheet" href="styles.css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tauri Apps</title>
+        <script type="module" src="/main.js" defer></script>
+    </head>
 
-  <body class="bg-gray-100 px-3 py-2">
-    <main class="container">
-      <header class="mb-2">
-        <h1 class="text-2xl font-bold">Générateur de tableur pour apogée</h1>
-        <details>
-          <summary>Explications</summary>
-          <p>
-            Le but de ce logiciel est de permettre de générer un fichier .csv
-            plus simple à importer pour la macro Excel à destination d'Apogée à
-            partir de l'export d'un semestre sur Scodoc.
-          </p>
-          <p>
-            Ainsi sont supprimés toutes les colonnes inutiles pour ne garder que
-            celles correspondant à la moyenne de chaque UE.
-          </p>
-          <p>
-            Parallèlement, ce logiciel est agnostique, il fonctionne de la même
-            manière quelque soit le semestre, le parcours ou encore la
-            formation.
-          </p>
-        </details>
-      </header>
+    <body class="bg-gray-100 px-3 py-2">
+        <main class="container">
+            <header class="mb-2">
+                <h1 class="text-2xl font-bold">
+                    Générateur de tableur pour apogée
+                </h1>
+                <details>
+                    <summary>Explications</summary>
+                    <p>
+                        Le but de ce logiciel est de permettre de générer un
+                        fichier .csv plus simple à importer pour la macro Excel
+                        à destination d'Apogée à partir de l'export d'un
+                        semestre sur Scodoc.
+                    </p>
+                    <p>
+                        Ainsi sont supprimés toutes les colonnes inutiles pour
+                        ne garder que celles correspondant à la moyenne de
+                        chaque UE.
+                    </p>
+                    <p>
+                        Parallèlement, ce logiciel est agnostique, il fonctionne
+                        de la même manière quelque soit le semestre, le parcours
+                        ou encore la formation.
+                    </p>
+                </details>
+            </header>
 
-      <form action="" method="post" class="flex flex-col gap-5">
-        <fieldset class="p-3 border border-black border-dashed rounded-xl" data-dropzone>
-          <legend class="text-xl px-2">Export .txt Apogée</legend>
-          <div class="flex flex-col gap-2 items-center">
-            <p class="text-center">
-              Glissez-déposez l'export .txt généré depuis Apogée
-            </p>
-            <p>ou</p>
-            <button type="button" class="btn-primary" data-upload-btn='{"accept": "txt", "name": "export_apogee"}'>
-              Sélectionner un fichier
-            </button>
-            <p class="" id="export_apogee"></p>
-          </div>
-        </fieldset>
+            <form action="" method="post" class="flex flex-col gap-5">
+                <fieldset
+                    class="p-3 border border-black border-dashed rounded-xl"
+                    data-dropzone
+                >
+                    <legend class="text-xl px-2">Export .txt Apogée</legend>
+                    <div class="flex flex-col gap-2 items-center">
+                        <p class="text-center">
+                            Glissez-déposez l'export .txt généré depuis Apogée
+                        </p>
+                        <p>ou</p>
+                        <button
+                            type="button"
+                            class="btn-primary"
+                            data-upload-btn='{"accept": "txt", "name": "export_apogee"}'
+                        >
+                            Sélectionner un fichier
+                        </button>
+                        <p class="" id="export_apogee"></p>
+                    </div>
+                </fieldset>
 
-        <fieldset class="p-3 border border-black border-dashed rounded-xl" data-dropzone>
-          <legend class="text-xl px-2">Export semestre Scodoc</legend>
-          <div class="flex flex-col gap-2 items-center" >
-            <p class="text-center">
-              Glissez-déposez l'export .csv généré depuis Scodoc
-            </p>
-            <p>ou</p>
-            <button type="button" class="btn-primary" data-upload-btn='{"accept": "csv", "name": "export_scodoc"}'>
-              Sélectionner un fichier
-            </button>
-            <p class="" id="export_scodoc"></p>
-            
-          </div>
-        </fieldset>
-        <fieldset class="p-3 border border-black border-dashed rounded-xl">
-          <legend class="text-xl px-2">Options</legend>
-          <div class="grid grid-cols-2 gap-2">
-              <label for="bareme">Barème</label>
-              <input type="number" name="bareme" min="1" max="100" value="20" id="bareme">
-              <label for="separateur_csv">Séparateur du fichier csv</label>
-              <select name="separateur_csv" id="separateur_csv">
-                <option value="point_virgule">;</option>
-                <option value="virgule">,</option>
-              </select>
+                <fieldset
+                    class="p-3 border border-black border-dashed rounded-xl"
+                    data-dropzone
+                >
+                    <legend class="text-xl px-2">Export semestre Scodoc</legend>
+                    <div class="flex flex-col gap-2 items-center">
+                        <p class="text-center">
+                            Glissez-déposez l'export .csv généré depuis Scodoc
+                        </p>
+                        <p>ou</p>
+                        <button
+                            type="button"
+                            class="btn-primary"
+                            data-upload-btn='{"accept": "csv", "name": "export_scodoc"}'
+                        >
+                            Sélectionner un fichier
+                        </button>
+                        <p class="" id="export_scodoc"></p>
+                    </div>
+                </fieldset>
+                <fieldset
+                    class="p-3 border border-black border-dashed rounded-xl"
+                >
+                    <legend class="text-xl px-2">Options</legend>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label for="bareme">Barème</label>
+                        <input
+                            type="number"
+                            name="bareme"
+                            min="1"
+                            max="100"
+                            value="20"
+                            id="bareme"
+                        />
+                        <label for="separateur_csv"
+                            >Séparateur du fichier csv</label
+                        >
+                        <select name="separateur_csv" id="separateur_csv">
+                            <option value="point_virgule">;</option>
+                            <option value="virgule">,</option>
+                        </select>
+                    </div>
+                </fieldset>
+                <footer class="flex flex-row justify-between">
+                    <button class="btn-primary" type="submit">Générer</button>
+                    <button class="btn-secondary" type="reset">
+                        Réinitialiser
+                    </button>
+                </footer>
+            </form>
+        </main>
+
+        <dialog id="error-form-dialog" class="inset-0 m-auto bg-transparent">
+            <div
+                class="min-w-3xs flex flex-col gap-3 bg-white rounded-2xl border-red-600 border-2 border-solid p-3"
+            >
+                <header class="text-red-600 flex items-center justify-center">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="currentColor"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            d="M16.971 0h-9.942l-7.029 7.029v9.941l7.029 7.03h9.941l7.03-7.029v-9.942l-7.029-7.029zm-1.402 16.945l-3.554-3.521-3.518 3.568-1.418-1.418 3.507-3.566-3.586-3.472 1.418-1.417 3.581 3.458 3.539-3.583 1.431 1.431-3.535 3.568 3.566 3.522-1.431 1.43z"
+                        />
+                    </svg>
+                </header>
+                <p>Le formulaire possède une erreur</p>
+                <button
+                    command="close"
+                    class="btn-secondary w-full"
+                    commandfor="error-form-dialog"
+                >
+                    Fermer
+                </button>
             </div>
-        </fieldset>
-        <footer class="flex flex-row justify-between">
-        <button class="btn-primary" type="submit">Générer</button>
-        <button class="btn-secondary" type="reset">Réinitialiser</button>
-        </footer>
-      </form>
-    </main>
-  </body>
+        </dialog>
+        <dialog id="start-download-dialog" class="inset-0 m-auto rounded-2xl">
+            <div
+                class="min-w-3xs flex flex-col gap-3 rounded-2xl p-3 border-green-600 border-2 border-solid"
+            >
+                <header class="text-green-600 flex items-center justify-center">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                    >
+                        <path
+                            d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.25 17.292l-4.5-4.364 1.857-1.858 2.643 2.506 5.643-5.784 1.857 1.857-7.5 7.643z"
+                        />
+                    </svg>
+                </header>
+
+                <p>Fichier téléchargé</p>
+
+                <button
+                    command="close"
+                    class="btn-secondary w-full"
+                    commandfor="start-download-dialog"
+                >
+                    Fermer
+                </button>
+            </div>
+        </dialog>
+    </body>
 </html>

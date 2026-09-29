@@ -1,5 +1,6 @@
 import { open, save } from '@tauri-apps/plugin-dialog';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import * as z from 'zod';
 
 import {
     getDropZone,
@@ -11,8 +12,16 @@ const { invoke } = window.__TAURI__.core;
 
 const listUploadButtons = document.querySelectorAll('[data-upload-btn]');
 
+const errorFormDialog = document.getElementById("error-form-dialog");
+const downloadStartedDialog = document.getElementById("start-download-dialog");
+
 const listFiles = {};
 let currentZone = null;
+
+const FormPayload = z.object({
+    exportApogee: z.string(),
+    exportScodoc: z.string(),
+});
 
 const handleFile = (path, config) => {
     const output = document.getElementById(config.name);
@@ -51,13 +60,21 @@ form.addEventListener('submit', async (e) => {
 
     const formData = new FormData(form);
 
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    const formattedData = await invoke('process_form_payload', {
+    const tauriPayload = {
         exportApogee: listFiles.export_apogee,
         exportScodoc: listFiles.export_scodoc,
         bareme: formData.get('bareme'),
         separateurCsv: formData.get('separateur_csv'),
-    });
+    };
+
+    const result = FormPayload.safeParse(tauriPayload);
+    if (!result.success) {
+        errorFormDialog.showModal()
+        return;
+    }
+
+    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+    const formattedData = await invoke('process_form_payload', tauriPayload);
 
     if (formattedData) {
         const now = new Date();
@@ -75,6 +92,8 @@ form.addEventListener('submit', async (e) => {
                 },
             ],
         });
+
+        downloadStartedDialog.showModal()
 
         await invoke('download_data', {
             outputPath,
