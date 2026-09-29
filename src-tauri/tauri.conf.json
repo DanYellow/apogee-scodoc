@@ -13,9 +13,11 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "apogee-scodoc",
+        "title": "Export Scodoc pour Apogée",
         "width": 800,
-        "height": 600
+        "height": 900,
+        "label": "main",
+        "dragDropEnabled": true
       }
     ],
     "security": {
