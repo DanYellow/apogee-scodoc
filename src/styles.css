@@ -17,6 +17,20 @@
         background-color: var(--color-blue-900);
     }
   }
+
+  .btn-secondary {
+    background-color: var(--color-gray-200);
+    border-radius: var(--radius-xl);
+    padding-inline: --spacing(3);
+    padding-block: --spacing(2.5);
+    width: fit-content;
+    color: var(--color-black);
+    text-align: center;
+
+    &:is(:hover, :focus) {
+        background-color: var(--color-gray-300);
+    }
+  }
 }
 
 .dropzone-valid-file {

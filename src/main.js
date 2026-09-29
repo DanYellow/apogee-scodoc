@@ -89,8 +89,6 @@ const isFileValid = (path, allowedExt) => {
     return allowedExt.includes(extension);
 };
 
-
-
 const setDragOver = (zone) => {
     if (currentZone === zone) {
         return;
@@ -100,8 +98,6 @@ const setDragOver = (zone) => {
     if (currentZone) {
         currentZone.classList.remove('dropzone-valid-file');
         currentZone.classList.remove('dropzone-not-valid-file');
-
-        // currentZone.classList.add("dropzone-valid-file");
     }
 
     // Add to new zone
@@ -167,7 +163,6 @@ await appWindow.onDragDropEvent((event) => {
 
     if (type === 'enter') {
         currentFilePath = paths[0] ?? null;
-        console.log('Files:', paths);
 
         updateDropZone(position);
         return;
@@ -187,8 +182,6 @@ await appWindow.onDragDropEvent((event) => {
         if (isValid) {
             handleFile(paths[0], config);
         }
-        // Process the files here
-        // uploadFiles(paths, currentZone);
 
         resetDragState(currentZone, setDragOver);
         currentFilePath = null;
@@ -199,4 +192,14 @@ await appWindow.onDragDropEvent((event) => {
         resetDragState(currentZone, setDragOver);
         currentFilePath = null;
     }
+});
+
+form.addEventListener('reset', (event) => {
+    listUploadButtons.forEach((item) => {
+        const config = JSON.parse(item.dataset.uploadBtn);
+
+        const output = document.getElementById(config.name);
+        output.textContent = '';
+        listFiles[config.name] = null;
+    });
 });
