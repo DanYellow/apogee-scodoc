@@ -36,7 +36,7 @@ Array.from(listUploadButtons).forEach((button) => {
     button.addEventListener('click', async (e) => {
         const $el = e.currentTarget;
         const config = JSON.parse($el.dataset.uploadBtn);
-        console.log(config);
+
         const file = await open({
             multiple: false,
             filters: [
@@ -85,22 +85,28 @@ form.addEventListener('submit', async (e) => {
             .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             .replaceAll(':', '-');
 
+        const exportType = listFiles.export_scodoc.split('.').pop().toLowerCase()
+
         const outputPath = await save({
-            defaultPath: `export-scodoc-pour-apogee-${nowStr}-${nowTimeStr}.csv`,
+            defaultPath: `export-scodoc-pour-apogee-${nowStr}-${nowTimeStr}`,
             filters: [
                 {
-                    name: 'CSV',
-                    extensions: ['csv'],
+                    name: exportType.toUpperCase(),
+                    extensions: [exportType],
                 },
             ],
         });
 
-        downloadStartedDialog.showModal();
-
-        await invoke('download_data', {
-            outputPath,
-            csvContent: formattedData,
-        });
+        try {
+            await invoke('download_data', {
+                outputPath,
+                outputType: exportType,
+                csvContent: formattedData,
+            });
+            downloadStartedDialog.showModal();
+        } catch (error) {
+          console.log("error", error)
+        }
     }
 });
 

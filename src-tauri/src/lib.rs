@@ -3,23 +3,15 @@ use std::fs;
 use std::{
     collections::HashSet,
     fs::File,
-    io::{BufRead, BufReader, Write},
-    path::Path,
+    io::{BufRead, BufReader, Cursor, Write},
 };
-use umya_spreadsheet::{Worksheet};
+use umya_spreadsheet::{self, writer};
 
 use csv::{ReaderBuilder, WriterBuilder};
 use encoding_rs::WINDOWS_1252;
 use regex::Regex;
 
-fn extract_student_nip_codes(content: &str) -> Vec<String> {
-    let student_nip_code = Regex::new(r"\d{8}").unwrap();
-
-    student_nip_code
-        .find_iter(content)
-        .map(|m| m.as_str().to_string())
-        .collect()
-}
+mod utils;
 
 fn parse_scodoc_csv(
     csv_data: String,
@@ -105,6 +97,49 @@ fn export_csv(result: &[IndexMap<String, String>], output_path: &str) -> Result<
     Ok(())
 }
 
+fn export_xlsx(result: &[IndexMap<String, String>], output_path: &str) -> Result<(), String> {
+    if result.is_empty() {
+        return Ok(());
+    }
+
+    let mut book = umya_spreadsheet::new_file();
+    let sheet = book.active_sheet_mut();
+
+    // Headers
+    let headers: Vec<&String> = result[0].keys().collect();
+
+    for (col, header) in headers.iter().enumerate() {
+        // let coordinate = Coordinate::from((col + 1, 1));
+
+        // book.sheet_mut(1)
+        //     .unwrap()
+        //     .cell_mut((col + 1, 1))
+        //     .set_value(header.as_str());
+        sheet
+            .cell_mut(((col + 1) as u32, 1))
+            .set_value(header.as_str());
+    }
+
+    // Rows
+    for (row_idx, row) in result.iter().enumerate() {
+        for (col_idx, key) in headers.iter().enumerate() {
+            let value = row.get(*key).map(String::as_str).unwrap_or("");
+
+            let coordinate = ((col_idx + 1) as u32, (row_idx + 2) as u32);
+
+            if col_idx == 0 {
+                sheet.cell_mut(coordinate).set_value_string(value);
+            } else {
+                sheet.cell_mut(coordinate).set_value(value);
+            }
+        }
+    }
+
+    writer::xlsx::write(&book, output_path).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
 fn compute_data_for_export(
     csv: Vec<IndexMap<String, String>>,
     bareme: &str,
@@ -163,7 +198,6 @@ fn sheet_to_csv(sheet: &umya_spreadsheet::Worksheet) -> String {
     csv
 }
 
-
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
 #[tauri::command]
@@ -184,9 +218,9 @@ fn process_form_payload(
         }
     };
 
-    let nip_codes: Vec<String> = extract_student_nip_codes(&export_apogee_content);
+    let nip_codes: Vec<String> = utils::extract_student_nip_codes(&export_apogee_content);
 
-    let mut csv_data: String;
+    let csv_data: String;
     let path = std::path::Path::new(export_scodoc);
     if path
         .extension()
@@ -202,7 +236,6 @@ fn process_form_payload(
     }
 
     let mut filtered_scodoc_data = parse_scodoc_csv(csv_data, separateur_csv.as_ptr() as u8)?;
-
     filtered_scodoc_data.retain(|row| {
         row.get("code_nip")
             .map_or(false, |nip_student| nip_codes.contains(nip_student))
@@ -217,10 +250,15 @@ fn process_form_payload(
 }
 
 #[tauri::command]
-fn download_data(output_path: &str, csv_content: &str) -> Result<(), String> {
+fn download_data(output_path: &str, csv_content: &str, output_type: String) -> Result<(), String> {
     let data: Vec<IndexMap<String, String>> =
         serde_json::from_str(csv_content).map_err(|e| e.to_string())?;
-    export_csv(&data, &output_path)?;
+
+    if output_type == "xslx" {
+        export_xlsx(&data, &output_path)?;
+    } else {
+        export_csv(&data, &output_path)?;
+    }
 
     Ok(())
 }

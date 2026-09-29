@@ -14,7 +14,7 @@
     text-align: center;
 
     &:is(:hover, :focus) {
-        background-color: var(--color-blue-900);
+      background-color: var(--color-blue-900);
     }
   }
 
@@ -28,21 +28,24 @@
     text-align: center;
 
     &:is(:hover, :focus) {
-        background-color: var(--color-gray-300);
+      background-color: var(--color-gray-300);
     }
   }
 }
 
 .dropzone-valid-file {
   border-color: var(--color-green-900);
+  background-color: hwb(from var(--color-green-300) h w b / 0.35);
 }
 
 .dropzone-not-valid-file {
   border-color: var(--color-red-900);
+  background-color: hwb(from var(--color-red-900) h w b / 0.15);
+
 }
 
 .shake {
-  animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+  animation: shake 0.82s cubic-bezier(.36, .07, .19, .97) both;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
   perspective: 1000px;
@@ -50,19 +53,25 @@
 
 
 @keyframes shake {
-  10%, 90% {
+
+  10%,
+  90% {
     transform: translate3d(-1px, 0, 0);
   }
-  
-  20%, 80% {
+
+  20%,
+  80% {
     transform: translate3d(2px, 0, 0);
   }
 
-  30%, 50%, 70% {
+  30%,
+  50%,
+  70% {
     transform: translate3d(-4px, 0, 0);
   }
 
-  40%, 60% {
+  40%,
+  60% {
     transform: translate3d(4px, 0, 0);
   }
 }
