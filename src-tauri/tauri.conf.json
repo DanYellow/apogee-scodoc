@@ -7,15 +7,15 @@
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist"
+    "frontendDist": "../src/dist"
   },
   "app": {
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Export Scodoc pour Apogée",
+        "title": "Export Scodoc pour macro Apogée",
         "width": 800,
-        "height": 900,
+        "height": 750,
         "label": "main",
         "dragDropEnabled": true
       }

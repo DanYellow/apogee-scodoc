@@ -139,7 +139,6 @@ fn process_form_payload(
     export_apogee: &str,
     export_scodoc: &str,
     bareme: &str,
-    separateur_csv: &str,
 ) -> Result<String, String> {
     let bytes =
         fs::read(export_apogee).map_err(|e| format!("Failed to read {}: {}", export_apogee, e))?;

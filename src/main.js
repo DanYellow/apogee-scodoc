@@ -8,6 +8,8 @@ import {
     getDropZoneConfig,
 } from './assets/scripts/drag-n-drop.utils';
 
+import './assets/scripts/tab-system';
+
 const { invoke } = window.__TAURI__.core;
 
 const listUploadButtons = document.querySelectorAll('[data-upload-btn]');
@@ -28,6 +30,7 @@ const handleFile = (path, config) => {
 
     if (output) {
         output.innerHTML = `Fichier sélectionné : <span class="">${path}</span>`;
+        output.classList.remove("opacity-0");
         listFiles[config.name] = path;
     }
 };
@@ -66,7 +69,6 @@ form.addEventListener('submit', async (e) => {
         exportApogee: listFiles.export_apogee,
         exportScodoc: listFiles.export_scodoc,
         bareme: formData.get('bareme'),
-        separateurCsv: formData.get('separateur_csv'),
     };
 
     const result = FormPayload.safeParse(tauriPayload);
@@ -88,7 +90,7 @@ form.addEventListener('submit', async (e) => {
         const exportType = listFiles.export_scodoc.split('.').pop().toLowerCase()
 
         const outputPath = await save({
-            defaultPath: `export-scodoc-pour-apogee-${nowStr}-${nowTimeStr}`,
+            defaultPath: `export-scodoc-macro-apogee-${nowStr}-${nowTimeStr}.${exportType}`,
             filters: [
                 {
                     name: exportType.toUpperCase(),
@@ -233,6 +235,7 @@ form.addEventListener('reset', (event) => {
 
         const output = document.getElementById(config.name);
         output.textContent = '';
+        output.classList.add("opacity-0");
         listFiles[config.name] = null;
     });
 });

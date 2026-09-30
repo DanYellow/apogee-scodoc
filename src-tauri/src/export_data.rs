@@ -1,11 +1,8 @@
 use indexmap::IndexMap;
-use std::{
-    fs::File,
-    io::{Write},
-};
+use std::{fs::File, io::Write, path::Path};
 use umya_spreadsheet::{self, writer};
 
-use csv::{WriterBuilder};
+use csv::WriterBuilder;
 
 pub fn export_csv(result: &[IndexMap<String, String>], output_path: &str) -> Result<(), String> {
     if result.is_empty() {
@@ -41,6 +38,14 @@ pub fn export_xlsx(result: &[IndexMap<String, String>], output_path: &str) -> Re
     if result.is_empty() {
         return Ok(());
     }
+
+    let output_path = Path::new(output_path);
+
+    let output_path = if output_path.extension().is_none() {
+        output_path.with_extension("xlsx")
+    } else {
+        output_path.to_path_buf()
+    };
 
     let mut book = umya_spreadsheet::new_file();
     let sheet = book.active_sheet_mut();
