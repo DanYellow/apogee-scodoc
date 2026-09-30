@@ -93,6 +93,22 @@ pub fn export_xlsx(result: models::PayloadExportJsonData, output_path: &str) -> 
                     }
                 }
             }
+
+            sheet.insert_new_column("0", 1);
+
+            let (last_col_idx, max_row) = (sheet.highest_column(), sheet.highest_row());
+
+            for row_idx in 1..=max_row {
+                // Get the value from the last column
+                if let Some(cell) = sheet.cell((last_col_idx, row_idx)) {
+                    let value = cell.value().to_string();
+
+                    // Set it in the first column (Column 1 / 'A')
+                    sheet.cell_mut((1, row_idx)).set_value(value);
+                }
+            }
+            sheet.remove_column_by_index(sheet.highest_column(), 1);
+
         }
     }
 

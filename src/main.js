@@ -23,6 +23,7 @@ let currentZone = null;
 const FormPayload = z.object({
     exportApogee: z.string(),
     exportScodoc: z.string(),
+    bareme: z.coerce.number().min(1).max(100),
 });
 
 const handleFile = (path, config) => {
