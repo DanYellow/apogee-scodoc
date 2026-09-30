@@ -1,9 +1,9 @@
 use indexmap::IndexMap;
-use std::{fs::File, io::Write, path::Path};
 use regex::Regex;
+use std::{fs::File, io::Write, path::Path};
 
 use csv::WriterBuilder;
-use umya_spreadsheet::{self, structs, writer};
+use umya_spreadsheet::{self, writer};
 
 use crate::models;
 
@@ -37,11 +37,15 @@ pub fn export_csv(result: &[IndexMap<String, String>], output_path: &str) -> Res
     Ok(())
 }
 
-pub fn export_xlsx(result: models::PayloadExportJsonData, output_path: &str) -> Result<(), String> {
-    if result.found_students.is_empty() {
-        return Ok(());
+fn sheet_name(key: &str) -> &str {
+    match key {
+        "found_students" => "Données pour Apogée",
+        "not_found_students" => "Etudiants non trouvés",
+        _ => key,
     }
+}
 
+pub fn export_xlsx(result: models::PayloadExportJsonData, output_path: &str) -> Result<(), String> {
     let output_path = Path::new(output_path);
 
     let output_path = if output_path.extension().is_none() {
@@ -51,28 +55,43 @@ pub fn export_xlsx(result: models::PayloadExportJsonData, output_path: &str) -> 
     };
 
     let mut book = umya_spreadsheet::new_file();
-    let sheet = book.active_sheet_mut();
+    let _ = book.remove_sheet(0);
 
-    // Headers
-    let headers: Vec<&String> = result.found_students[0].keys().collect();
+    let result_json = serde_json::to_value(&result).map_err(|e| e.to_string())?;
 
-    for (col, header) in headers.iter().enumerate() {
-        sheet
-            .cell_mut(((col + 1) as u32, 1))
-            .set_value(header.as_str());
-    }
+    if let Some(object) = result_json.as_object() {
+        for (key, value) in object {
+            let list_students: Vec<IndexMap<String, String>> =
+                serde_json::from_value(value.clone()).map_err(|e| e.to_string())?;
+            let tab_name = sheet_name(key);
+            let sheet = book.new_sheet(tab_name).map_err(|e| e.to_string())?;
 
-    // Rows
-    for (row_idx, row) in result.found_students.iter().enumerate() {
-        for (col_idx, key) in headers.iter().enumerate() {
-            let value = row.get(*key).map(String::as_str).unwrap_or("");
+            if list_students.is_empty() {
+                continue;
+            }
 
-            let coordinate = ((col_idx + 1) as u32, (row_idx + 2) as u32);
+            // Headers
+            let headers: Vec<&String> = list_students[0].keys().collect();
 
-            if col_idx == 0 {
-                sheet.cell_mut(coordinate).set_value_string(value);
-            } else {
-                sheet.cell_mut(coordinate).set_value(value);
+            for (col, header) in headers.iter().enumerate() {
+                sheet
+                    .cell_mut(((col + 1) as u32, 1))
+                    .set_value(header.as_str());
+            }
+
+            // Rows
+            for (row_idx, row) in list_students.iter().enumerate() {
+                for (col_idx, key) in headers.iter().enumerate() {
+                    let value = row.get(*key).map(String::as_str).unwrap_or("");
+
+                    let coordinate = ((col_idx + 1) as u32, (row_idx + 2) as u32);
+
+                    if col_idx == 0 {
+                        sheet.cell_mut(coordinate).set_value_string(value);
+                    } else {
+                        sheet.cell_mut(coordinate).set_value(value);
+                    }
+                }
             }
         }
     }
@@ -81,7 +100,6 @@ pub fn export_xlsx(result: models::PayloadExportJsonData, output_path: &str) -> 
 
     Ok(())
 }
-
 
 pub fn compute_data_for_export(
     csv: Vec<IndexMap<String, String>>,
@@ -99,7 +117,7 @@ pub fn compute_data_for_export(
                 new_obj.insert(key.clone(), value.clone());
 
                 if regex_ue.is_match(key) {
-                    let mut bareme_value = bareme.to_string(); 
+                    let mut bareme_value = bareme.to_string();
                     let mut final_grade: String = new_obj.get(key).unwrap().clone();
 
                     if new_obj

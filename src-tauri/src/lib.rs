@@ -5,7 +5,6 @@ use std::{
     io::{BufRead, BufReader},
 };
 use umya_spreadsheet::{self};
-use serde::Deserialize;
 
 use csv::ReaderBuilder;
 use encoding_rs::WINDOWS_1252;
@@ -14,12 +13,6 @@ use regex::Regex;
 mod export_data;
 mod utils;
 pub mod models;
-
-#[derive(Deserialize)]
-struct PayloadExportJsonData {
-    found_students: Vec<IndexMap<String, String>>,
-    not_found_students: Vec<IndexMap<String, String>>,
-}
 
 fn parse_scodoc_csv(csv_data: String) -> Result<Vec<IndexMap<String, String>>, String> {
     let columns_to_keep: HashSet<&str> = ["code_nip", "Nom", "Prénom"].into_iter().collect();
