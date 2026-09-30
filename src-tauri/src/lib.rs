@@ -2,27 +2,21 @@ use indexmap::IndexMap;
 use std::fs;
 use std::{
     collections::HashSet,
-    fs::File,
-    io::{BufRead, BufReader, Cursor, Write},
+    io::{BufRead, BufReader},
 };
-use umya_spreadsheet::{self, writer};
+use umya_spreadsheet::{self};
 
-use csv::{ReaderBuilder, WriterBuilder};
+use csv::ReaderBuilder;
 use encoding_rs::WINDOWS_1252;
 use regex::Regex;
 
+mod export_data;
 mod utils;
 
-fn parse_scodoc_csv(
-    csv_data: String,
-    delimiter: u8,
-) -> Result<Vec<IndexMap<String, String>>, String> {
+fn parse_scodoc_csv(csv_data: String) -> Result<Vec<IndexMap<String, String>>, String> {
     let columns_to_keep: HashSet<&str> = ["code_nip", "Nom", "Prénom"].into_iter().collect();
 
     let regex_ue = Regex::new(r"^UE\d").map_err(|e| e.to_string())?;
-
-    // Open file
-    // let file = File::open(export_scodoc).map_err(|e| e.to_string())?;
 
     let mut buf_reader = BufReader::new(csv_data.as_bytes());
 
@@ -67,82 +61,10 @@ fn parse_scodoc_csv(
     Ok(filtered)
 }
 
-fn export_csv(result: &[IndexMap<String, String>], output_path: &str) -> Result<(), String> {
-    if result.is_empty() {
-        return Ok(());
-    }
-
-    let mut file = File::create(output_path).map_err(|e| e.to_string())?;
-    file.write_all(b"\xEF\xBB\xBF").map_err(|e| e.to_string())?;
-
-    let mut writer = WriterBuilder::new().delimiter(b';').from_writer(file);
-
-    // Headers come from the first row
-    let headers: Vec<&String> = result[0].keys().collect();
-
-    writer.write_record(&headers).map_err(|e| e.to_string())?;
-
-    // Rows
-    for row in result {
-        let values = headers
-            .iter()
-            .map(|key| row.get(*key).map(String::as_str).unwrap_or(""))
-            .collect::<Vec<_>>();
-
-        writer.write_record(values).map_err(|e| e.to_string())?;
-    }
-
-    writer.flush().map_err(|e| e.to_string())?;
-
-    Ok(())
-}
-
-fn export_xlsx(result: &[IndexMap<String, String>], output_path: &str) -> Result<(), String> {
-    if result.is_empty() {
-        return Ok(());
-    }
-
-    let mut book = umya_spreadsheet::new_file();
-    let sheet = book.active_sheet_mut();
-
-    // Headers
-    let headers: Vec<&String> = result[0].keys().collect();
-
-    for (col, header) in headers.iter().enumerate() {
-        // let coordinate = Coordinate::from((col + 1, 1));
-
-        // book.sheet_mut(1)
-        //     .unwrap()
-        //     .cell_mut((col + 1, 1))
-        //     .set_value(header.as_str());
-        sheet
-            .cell_mut(((col + 1) as u32, 1))
-            .set_value(header.as_str());
-    }
-
-    // Rows
-    for (row_idx, row) in result.iter().enumerate() {
-        for (col_idx, key) in headers.iter().enumerate() {
-            let value = row.get(*key).map(String::as_str).unwrap_or("");
-
-            let coordinate = ((col_idx + 1) as u32, (row_idx + 2) as u32);
-
-            if col_idx == 0 {
-                sheet.cell_mut(coordinate).set_value_string(value);
-            } else {
-                sheet.cell_mut(coordinate).set_value(value);
-            }
-        }
-    }
-
-    writer::xlsx::write(&book, output_path).map_err(|e| e.to_string())?;
-
-    Ok(())
-}
-
 fn compute_data_for_export(
     csv: Vec<IndexMap<String, String>>,
     bareme: &str,
+    list_failed_students: Vec<String>,
 ) -> Result<Vec<IndexMap<String, String>>, String> {
     let regex_ue = Regex::new(r"^UE\d").map_err(|e| e.to_string())?;
 
@@ -155,7 +77,18 @@ fn compute_data_for_export(
                 new_obj.insert(key.clone(), value.clone());
 
                 if regex_ue.is_match(key) {
-                    new_obj.insert(format!("{}_barème", key), bareme.to_string());
+                    let bareme_value = if new_obj
+                        .get("code_nip")
+                        .is_some_and(|nip| list_failed_students.contains(nip))
+                    {
+                        "0".to_string()
+                    } else {
+                        bareme.to_string()
+                    };
+
+                    let final_grade = if 
+
+                    new_obj.insert(format!("{}_barème", key), bareme_value);
                     new_obj.insert(format!("{}_pts_jury", key), String::new());
                     new_obj.insert(format!("{}_résultat", key), String::new());
                 }
@@ -219,6 +152,7 @@ fn process_form_payload(
     };
 
     let nip_codes: Vec<String> = utils::extract_student_nip_codes(&export_apogee_content);
+    let mut list_failed_students: Vec<String> = Vec::new();
 
     let csv_data: String;
     let path = std::path::Path::new(export_scodoc);
@@ -231,18 +165,27 @@ fn process_form_payload(
 
         let sheet = book.sheet(0).unwrap();
         csv_data = sheet_to_csv(sheet);
+
+        if book.sheet(1).is_ok() {
+            let sheet_failed_students = book.sheet(1).unwrap();
+            list_failed_students =
+                utils::extract_column_for_index(sheet_to_csv(sheet_failed_students), 0)
+                    .unwrap_or_default();
+            // println!("list_failed_students {:#?}", list_failed_students);
+        }
     } else {
         csv_data = std::fs::read_to_string(export_scodoc).map_err(|e| e.to_string())?;
     }
 
-    let mut filtered_scodoc_data = parse_scodoc_csv(csv_data, separateur_csv.as_ptr() as u8)?;
+    let mut filtered_scodoc_data = parse_scodoc_csv(csv_data)?;
     filtered_scodoc_data.retain(|row| {
         row.get("code_nip")
             .map_or(false, |nip_student| nip_codes.contains(nip_student))
     });
 
     let bareme_valeur = if bareme.is_empty() { "20" } else { bareme };
-    let data_for_export = compute_data_for_export(filtered_scodoc_data, bareme_valeur)?;
+    let data_for_export =
+        compute_data_for_export(filtered_scodoc_data, bareme_valeur, list_failed_students)?;
 
     let json_string = serde_json::to_string(&data_for_export).map_err(|e| e.to_string())?;
 
@@ -253,11 +196,10 @@ fn process_form_payload(
 fn download_data(output_path: &str, csv_content: &str, output_type: String) -> Result<(), String> {
     let data: Vec<IndexMap<String, String>> =
         serde_json::from_str(csv_content).map_err(|e| e.to_string())?;
-
-    if output_type == "xslx" {
-        export_xlsx(&data, &output_path)?;
+    if output_type == "xlsx" {
+        export_data::export_xlsx(&data, &output_path)?;
     } else {
-        export_csv(&data, &output_path)?;
+        export_data::export_csv(&data, &output_path)?;
     }
 
     Ok(())
