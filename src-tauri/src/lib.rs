@@ -5,6 +5,7 @@ use std::{
     io::{BufRead, BufReader},
 };
 use umya_spreadsheet::{self};
+use serde::Deserialize;
 
 use csv::ReaderBuilder;
 use encoding_rs::WINDOWS_1252;
@@ -12,6 +13,13 @@ use regex::Regex;
 
 mod export_data;
 mod utils;
+pub mod models;
+
+#[derive(Deserialize)]
+struct PayloadExportJsonData {
+    found_students: Vec<IndexMap<String, String>>,
+    not_found_students: Vec<IndexMap<String, String>>,
+}
 
 fn parse_scodoc_csv(csv_data: String) -> Result<Vec<IndexMap<String, String>>, String> {
     let columns_to_keep: HashSet<&str> = ["code_nip", "Nom", "Prénom"].into_iter().collect();
@@ -59,47 +67,6 @@ fn parse_scodoc_csv(csv_data: String) -> Result<Vec<IndexMap<String, String>>, S
     filtered.retain(|row| row.get("Nom").map_or(false, |value| !value.is_empty()));
 
     Ok(filtered)
-}
-
-fn compute_data_for_export(
-    csv: Vec<IndexMap<String, String>>,
-    bareme: &str,
-    list_failed_students: Vec<String>,
-) -> Result<Vec<IndexMap<String, String>>, String> {
-    let regex_ue = Regex::new(r"^UE\d").map_err(|e| e.to_string())?;
-
-    let result: Vec<IndexMap<String, String>> = csv
-        .iter()
-        .map(|obj| {
-            let mut new_obj = IndexMap::new();
-
-            for (key, value) in obj {
-                new_obj.insert(key.clone(), value.clone());
-
-                if regex_ue.is_match(key) {
-                    let mut bareme_value = bareme.to_string(); 
-                    let mut final_grade: String = new_obj.get(key).unwrap().clone();
-
-                    if new_obj
-                        .get("code_nip")
-                        .is_some_and(|nip| list_failed_students.contains(nip))
-                    {
-                        bareme_value = "0".to_string();
-                        final_grade = "DEF".to_string();
-                    }
-
-                    new_obj.insert(format!("{}", key), final_grade);
-                    new_obj.insert(format!("{}_barème", key), bareme_value);
-                    new_obj.insert(format!("{}_pts_jury", key), String::new());
-                    new_obj.insert(format!("{}_résultat", key), String::new());
-                }
-            }
-
-            new_obj
-        })
-        .collect();
-
-    Ok(result)
 }
 
 fn sheet_to_csv(sheet: &umya_spreadsheet::Worksheet) -> String {
@@ -152,7 +119,7 @@ fn process_form_payload(
     };
 
     let nip_codes: Vec<String> = utils::extract_student_nip_codes(&export_apogee_content);
-    let mut list_failed_students: Vec<String> = Vec::new();
+    let mut list_resigning_students: Vec<String> = Vec::new();
 
     let csv_data: String;
     let path = std::path::Path::new(export_scodoc);
@@ -167,39 +134,60 @@ fn process_form_payload(
         csv_data = sheet_to_csv(sheet);
 
         if book.sheet(1).is_ok() {
-            let sheet_failed_students = book.sheet(1).unwrap();
-            list_failed_students =
-                utils::extract_column_for_index(sheet_to_csv(sheet_failed_students), 0)
+            let sheet_resigning_students = book.sheet(1).unwrap();
+            list_resigning_students =
+                utils::extract_column_for_index(sheet_to_csv(sheet_resigning_students), 0)
                     .unwrap_or_default();
-            // println!("list_failed_students {:#?}", list_failed_students);
         }
     } else {
         csv_data = std::fs::read_to_string(export_scodoc).map_err(|e| e.to_string())?;
     }
 
-    let mut filtered_scodoc_data = parse_scodoc_csv(csv_data)?;
-    filtered_scodoc_data.retain(|row| {
-        row.get("code_nip")
-            .map_or(false, |nip_student| nip_codes.contains(nip_student))
-    });
+    let filtered_scodoc_data = parse_scodoc_csv(csv_data)?;
+
+    let not_found_students: Vec<_> = filtered_scodoc_data
+        .iter()
+        .filter(|row| {
+            row.get("code_nip")
+                .is_some_and(|nip_student| !nip_codes.contains(nip_student))
+        })
+        .cloned()
+        .collect();
+
+    let found_students: Vec<_> = filtered_scodoc_data
+        .iter()
+        .filter(|row| {
+            row.get("code_nip")
+                .is_some_and(|nip_student| nip_codes.contains(nip_student))
+        })
+        .cloned()
+        .collect();
 
     let bareme_valeur = if bareme.is_empty() { "20" } else { bareme };
-    let data_for_export =
-        compute_data_for_export(filtered_scodoc_data, bareme_valeur, list_failed_students)?;
+    let data_for_export = export_data::compute_data_for_export(
+        found_students,
+        bareme_valeur,
+        list_resigning_students,
+    )?;
 
-    let json_string = serde_json::to_string(&data_for_export).map_err(|e| e.to_string())?;
+    let json_data = serde_json::json!({
+        "found_students": data_for_export,
+        "not_found_students": not_found_students,
+    });
+
+    let json_string = serde_json::to_string(&json_data).map_err(|e| e.to_string())?;
 
     Ok(json_string)
 }
 
 #[tauri::command]
 fn download_data(output_path: &str, csv_content: &str, output_type: String) -> Result<(), String> {
-    let data: Vec<IndexMap<String, String>> =
+    let data: models::PayloadExportJsonData =
         serde_json::from_str(csv_content).map_err(|e| e.to_string())?;
     if output_type == "xlsx" {
-        export_data::export_xlsx(&data, &output_path)?;
+        export_data::export_xlsx(data, &output_path)?;
     } else {
-        export_data::export_csv(&data, &output_path)?;
+        export_data::export_csv(&data.found_students, &output_path)?;
     }
 
     Ok(())

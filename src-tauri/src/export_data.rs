@@ -1,8 +1,11 @@
 use indexmap::IndexMap;
 use std::{fs::File, io::Write, path::Path};
-use umya_spreadsheet::{self, writer};
+use regex::Regex;
 
 use csv::WriterBuilder;
+use umya_spreadsheet::{self, structs, writer};
+
+use crate::models;
 
 pub fn export_csv(result: &[IndexMap<String, String>], output_path: &str) -> Result<(), String> {
     if result.is_empty() {
@@ -34,8 +37,8 @@ pub fn export_csv(result: &[IndexMap<String, String>], output_path: &str) -> Res
     Ok(())
 }
 
-pub fn export_xlsx(result: &[IndexMap<String, String>], output_path: &str) -> Result<(), String> {
-    if result.is_empty() {
+pub fn export_xlsx(result: models::PayloadExportJsonData, output_path: &str) -> Result<(), String> {
+    if result.found_students.is_empty() {
         return Ok(());
     }
 
@@ -51,7 +54,7 @@ pub fn export_xlsx(result: &[IndexMap<String, String>], output_path: &str) -> Re
     let sheet = book.active_sheet_mut();
 
     // Headers
-    let headers: Vec<&String> = result[0].keys().collect();
+    let headers: Vec<&String> = result.found_students[0].keys().collect();
 
     for (col, header) in headers.iter().enumerate() {
         sheet
@@ -60,7 +63,7 @@ pub fn export_xlsx(result: &[IndexMap<String, String>], output_path: &str) -> Re
     }
 
     // Rows
-    for (row_idx, row) in result.iter().enumerate() {
+    for (row_idx, row) in result.found_students.iter().enumerate() {
         for (col_idx, key) in headers.iter().enumerate() {
             let value = row.get(*key).map(String::as_str).unwrap_or("");
 
@@ -77,4 +80,46 @@ pub fn export_xlsx(result: &[IndexMap<String, String>], output_path: &str) -> Re
     writer::xlsx::write(&book, output_path).map_err(|e| e.to_string())?;
 
     Ok(())
+}
+
+
+pub fn compute_data_for_export(
+    csv: Vec<IndexMap<String, String>>,
+    bareme: &str,
+    list_failed_students: Vec<String>,
+) -> Result<Vec<IndexMap<String, String>>, String> {
+    let regex_ue = Regex::new(r"^UE\d").map_err(|e| e.to_string())?;
+
+    let result: Vec<IndexMap<String, String>> = csv
+        .iter()
+        .map(|obj| {
+            let mut new_obj = IndexMap::new();
+
+            for (key, value) in obj {
+                new_obj.insert(key.clone(), value.clone());
+
+                if regex_ue.is_match(key) {
+                    let mut bareme_value = bareme.to_string(); 
+                    let mut final_grade: String = new_obj.get(key).unwrap().clone();
+
+                    if new_obj
+                        .get("code_nip")
+                        .is_some_and(|nip| list_failed_students.contains(nip))
+                    {
+                        bareme_value = "0".to_string();
+                        final_grade = "DEF".to_string();
+                    }
+
+                    new_obj.insert(format!("{}", key), final_grade);
+                    new_obj.insert(format!("{}_barème", key), bareme_value);
+                    new_obj.insert(format!("{}_pts_jury", key), String::new());
+                    new_obj.insert(format!("{}_résultat", key), String::new());
+                }
+            }
+
+            new_obj
+        })
+        .collect();
+
+    Ok(result)
 }
