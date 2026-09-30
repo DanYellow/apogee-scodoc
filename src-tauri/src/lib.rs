@@ -77,17 +77,18 @@ fn compute_data_for_export(
                 new_obj.insert(key.clone(), value.clone());
 
                 if regex_ue.is_match(key) {
-                    let bareme_value = if new_obj
+                    let mut bareme_value = bareme.to_string(); 
+                    let mut final_grade: String = new_obj.get(key).unwrap().clone();
+
+                    if new_obj
                         .get("code_nip")
                         .is_some_and(|nip| list_failed_students.contains(nip))
                     {
-                        "0".to_string()
-                    } else {
-                        bareme.to_string()
-                    };
+                        bareme_value = "0".to_string();
+                        final_grade = "DEF".to_string();
+                    }
 
-                    let final_grade = if 
-
+                    new_obj.insert(format!("{}", key), final_grade);
                     new_obj.insert(format!("{}_barème", key), bareme_value);
                     new_obj.insert(format!("{}_pts_jury", key), String::new());
                     new_obj.insert(format!("{}_résultat", key), String::new());
