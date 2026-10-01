@@ -1,0 +1,76 @@
+XX-APO_TITRES-XX
+apoC_annee	2026/2027
+apoC_cod_dip	7W29
+apoC_Cod_Exp	2
+apoC_cod_vdi	4
+apoC_Fichier_Exp	C:\TEMP\apogee-example.TXT
+apoC_lib_dip	DUT MMI - CR�ATION NUM�RI
+apoC_Titre1	Export Apog�e du 28/09/2026 � 09:22
+apoC_Titre2	apogee-example
+							
+XX-APO_TYP_RES-XX
+20	ACP	ADAL	ADC	ADJ	ADM	ADMC	ADMI	ADSL	AJ	AJRE	AJSE	ATA	ATC	ATS	ATT	DEF	NAD	NADI	NAR	VAL	
+37	ABAN	ABL	ACP	ADAL	ADC	ADJ	ADM	ADMC	ADMI	ADMJ	ADSL	AJ	AJAC	AJAT	AJCI	AJRE	AJSE	APCV	ATA	ATC	ATS	ATT	AV	CODJ	COMP	DEF	DEM	EXC	NAD	NADI	NAR	PASD	PC	RED	REO	UESB	VAL	
+47	ABAN	ABL	ACP	ACQ	ADAL	ADC	ADJ	ADM	ADMC	ADMI	ADMJ	ADP	ADSL	AJ	AJAT	AJCI	AJRE	AQU	ATA	ATB	ATDJ	ATJ	ATS	ATT	AV	CODJ	COMP	DEF	DEM	EXC	EZ	NACQ	NAD	NADI	NAQU	NAR	NVAL	PASD	PC	PR	RED	REO	SSZ	SUIV	SZ	UESB	VAL	
+5	ABI	ABJ	DEF	DEM	DIS	
+ACP : Admis par compensation	ADAL : Admis avec la labellisation CMI	ADC : Admis par compensation	ADJ : Admis par d�cision du jury	ADM : Admis	ADMC : Admis par compensation	ADMI : Admissible	ADSL : Admis sans la labellisation CMI	AJ : Ajourn�	AJRE : Ajourn�, autoris� � redoubler	AJSE : Ajourn�, autoris� au rattrapage	ATA : En attente d'alternance	ATC : Attente : DU Professionnalisation	ATS : En attente de stage	ATT : En attente	DEF : D�faillant	NAD : Non admis	NADI : Non admissible	NAR : Non autoris� � redoubler	VAL : Valid�	
+ABAN : Abandon, remboursement �tud boursier	ABL : Ann�e blanchie	ACP : Admis par compensation	ADAL : Admis avec la labellisation CMI	ADC : Admis par compensation	ADJ : Admis par d�cision du jury	ADM : Admis	ADMC : Admis par compensation	ADMI : Admissible	ADMJ : Admis par d�cision du jury	ADSL : Admis sans la labellisation CMI	AJ : Ajourn�	AJAC : Ajourn� mais acc�s autoris� � �tape sup.	AJAT : AJ en attente, autorisat� �tap.suivante	AJCI : AJ niv. comp. insuff. autoris� �tap sup.	AJRE : Ajourn�, autoris� � redoubler	AJSE : Ajourn�, autoris� au rattrapage	APCV : Autoris� � poursuivre sur convention CPG	ATA : En attente d'alternance	ATC : Attente : DU Professionnalisation	ATS : En attente de stage	ATT : En attente	AV : Ann�e valid�e	CODJ : Val par compensat� sur d�cision de jury	COMP : Modification d�cision semestre impair	DEF : D�faillant	DEM : D�missionnaire	EXC : Exclusion, d�cision sect� disciplinaire	NAD : Non admis	NADI : Non admissible	NAR : Non autoris� � redoubler	PASD : Passage ann�e sup de droit	PC : Passage conditionnel	RED : Redoublement � l'ann�e	REO : R�orientation entre le sem 1 et le sem 2	UESB : UE du semestre blanchie	VAL : Valid�	
+ABAN : Abandon, remboursement �tud boursier	ABL : Ann�e blanchie	ACP : Admis par compensation	ACQ : Acquise	ADAL : Admis avec la labellisation CMI	ADC : Admis par compensation	ADJ : Admis par d�cision du jury	ADM : Admis	ADMC : Admis par compensation	ADMI : Admissible	ADMJ : Admis par d�cision du jury	ADP : Admis sous r�serve validation de stage	ADSL : Admis sans la labellisation CMI	AJ : Ajourn�	AJAT : AJ en attente, autorisat� �tap.suivante	AJCI : AJ niv. comp. insuff. autoris� �tap sup.	AJRE : Ajourn�, autoris� � redoubler	AQU : Acquis	ATA : En attente d'alternance	ATB : Attente note seuil	ATDJ : Attente d�cision du jury	ATJ : Attente assiduit�	ATS : En attente de stage	ATT : En attente	AV : Ann�e valid�e	CODJ : Val par compensat� sur d�cision de jury	COMP : Modification d�cision semestre impair	DEF : D�faillant	DEM : D�missionnaire	EXC : Exclusion, d�cision sect� disciplinaire	EZ : Note �gale � z�ro	NACQ : Non acquise	NAD : Non admis	NADI : Non admissible	NAQU : Non acquis	NAR : Non autoris� � redoubler	NVAL : Non valid�	PASD : Passage ann�e sup de droit	PC : Passage conditionnel	PR : Pr�sent � la certification	RED : Redoublement � l'ann�e	REO : R�orientation entre le sem 1 et le sem 2	SSZ : Strictement sup�rieur � z�ro	SUIV : Suivie	SZ : Note strictement sup�rieure � z�ro	UESB : UE du semestre blanchie	VAL : Valid�	
+ABI : Absence injustifi�e	ABJ : Absence justifi�e	DEF : D�faillant	DEM : D�missionnaire	DIS : Dispense examen	
+							
+XX-APO_COLONNES-XX
+apoL_a01_code	Type Objet	Code	Version	Ann�e	Session	Admission/Admissibilit�	Type R�s.			Etudiant	Num�ro
+apoL_a02_nom											Nom
+apoL_a03_prenom											Pr�nom
+apoL_a04_naissance									Session	Admissibilit�	Naissance
+APO_COL_VAL_DEB
+apoL_c0001	ELP	7WGA4		2026	0	1	N	7WGA4 - Comprend strat�gie com S4	0	1	Note
+apoL_c0002	ELP	7WGA4		2026	0	1	B		0	1	Bar�me
+apoL_c0003	ELP	7WGA4		2026	0	1	J		0	1	Pts Jury
+apoL_c0004	ELP	7WGA4		2026	0	1	R		0	1	R�sultat
+apoL_c0005	ELP	7WGB4		2026	0	1	N	7WGB4 - Co-concevoir r�ponse S4	0	1	Note
+apoL_c0006	ELP	7WGB4		2026	0	1	B		0	1	Bar�me
+apoL_c0007	ELP	7WGB4		2026	0	1	J		0	1	Pts Jury
+apoL_c0008	ELP	7WGB4		2026	0	1	R		0	1	R�sultat
+apoL_c0009	ELP	7WGC4		2026	0	1	N	7WGC4 - Expri identit� visuell S4	0	1	Note
+apoL_c0010	ELP	7WGC4		2026	0	1	B		0	1	Bar�me
+apoL_c0011	ELP	7WGC4		2026	0	1	J		0	1	Pts Jury
+apoL_c0012	ELP	7WGC4		2026	0	1	R		0	1	R�sultat
+apoL_c0013	ELP	7WGD4		2026	0	1	N	7WGD4 - D�velop applic web S4	0	1	Note
+apoL_c0014	ELP	7WGD4		2026	0	1	B		0	1	Bar�me
+apoL_c0015	ELP	7WGD4		2026	0	1	J		0	1	Pts Jury
+apoL_c0016	ELP	7WGD4		2026	0	1	R		0	1	R�sultat
+apoL_c0017	ELP	7WGE4		2026	0	1	N	7WGE4 - Entreprendre un projet S4	0	1	Note
+apoL_c0018	ELP	7WGE4		2026	0	1	B		0	1	Bar�me
+apoL_c0019	ELP	7WGE4		2026	0	1	J		0	1	Pts Jury
+apoL_c0020	ELP	7WGE4		2026	0	1	R		0	1	R�sultat
+APO_COL_VAL_FIN
+apoL_c0021	APO_COL_VAL_FIN							  	
+							
+XX-APO_VALEURS-XX
+apoL_a01_code	apoL_a02_nom	apoL_a03_prenom	apoL_a04_naissance	apoL_c0001	apoL_c0002	apoL_c0003	apoL_c0004	apoL_c0005	apoL_c0006	apoL_c0007	apoL_c0008	apoL_c0009	apoL_c0010	apoL_c0011	apoL_c0012	apoL_c0013	apoL_c0014	apoL_c0015	apoL_c0016	apoL_c0017	apoL_c0018	apoL_c0019	apoL_c0020	
+58310472	AAA BBB	 19/08/2007																				
+91736205	AAA BBB	 31/03/2007																				
+24681953	AAA BBB	 06/11/2007																				
+73045186	AAA BBB	 14/08/2006																				
+16492738	AAA BBB	 12/08/2006																				
+85260319	AAA BBB	 13/10/2006																				
+39174520	AAA BBB	 11/03/2004																				
+60823194	AAA BBB	 04/07/2007																				
+47591863	AAA BBB	 03/06/2007																				
+82934617	AAA BBB	 15/05/2007																				
+15378046	AAA BBB	 07/05/2007																				
+69421583	AAA BBB	 08/01/2007																				
+30786429	AAA BBB	 30/06/2006																				
+94157302	AAA BBB	 30/09/2006																				
+52639071	AAA BBB	 24/02/2006																				
+78302654	AAA BBB	 23/05/2006																				
+21865937	AAA BBB	 25/09/2007																				
+86510493	AAA BBB	 05/04/2007																				
+43078216	AAA BBB	 15/05/2007																				
+71943850	AAA BBB	 11/08/2006																				
+35291684	AAA BBB	 26/03/2007																				
+98052731	AAA BBB	 04/05/2007																				
+64185327	AAA BBB	 26/04/2007																				
+27460918	AAA BBB	 20/01/2007																				
+83729165	AAA BBB	 24/01/2008																				
