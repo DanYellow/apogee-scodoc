@@ -1,5 +1,7 @@
 import { open, save } from '@tauri-apps/plugin-dialog';
+import { openPath } from '@tauri-apps/plugin-opener';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+
 import * as z from 'zod';
 
 import {
@@ -17,8 +19,12 @@ const listUploadButtons = document.querySelectorAll('[data-upload-btn]');
 const errorFormDialog = document.getElementById('error-form-dialog');
 const downloadStartedDialog = document.getElementById('start-download-dialog');
 
+const fileCreatedLabel = document.querySelector('[data-file-created]');
+const openFileBtn = document.querySelector('[data-open-file]');
+
 const listFiles = {};
 let currentZone = null;
+let outputPath = '';
 
 const FormPayload = z.object({
     exportApogee: z.string(),
@@ -31,7 +37,7 @@ const handleFile = (path, config) => {
 
     if (output) {
         output.innerHTML = `Fichier sélectionné : <span class="">${path}</span>`;
-        output.classList.remove("opacity-0");
+        output.classList.remove('opacity-0');
         listFiles[config.name] = path;
     }
 };
@@ -88,9 +94,12 @@ form.addEventListener('submit', async (e) => {
             .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             .replaceAll(':', '-');
 
-        const exportType = listFiles.export_scodoc.split('.').pop().toLowerCase()
+        const exportType = listFiles.export_scodoc
+            .split('.')
+            .pop()
+            .toLowerCase();
 
-        const outputPath = await save({
+        outputPath = await save({
             defaultPath: `export-scodoc-macro-apogee-${nowStr}-${nowTimeStr}.${exportType}`,
             filters: [
                 {
@@ -106,9 +115,10 @@ form.addEventListener('submit', async (e) => {
                 outputType: exportType,
                 csvContent: formattedData,
             });
+            fileCreatedLabel.textContent = outputPath.split('/').at(-1);
             downloadStartedDialog.showModal();
         } catch (error) {
-          console.log("error", error)
+            console.log('error', error);
         }
     }
 });
@@ -236,7 +246,12 @@ form.addEventListener('reset', (event) => {
 
         const output = document.getElementById(config.name);
         output.textContent = '';
-        output.classList.add("opacity-0");
+        output.classList.add('opacity-0');
         listFiles[config.name] = null;
     });
+});
+
+openFileBtn.addEventListener('click', async () => {
+    downloadStartedDialog.close();
+    await openPath(outputPath);
 });

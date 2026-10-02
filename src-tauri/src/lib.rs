@@ -11,8 +11,8 @@ use encoding_rs::WINDOWS_1252;
 use regex::Regex;
 
 mod export_data;
-mod utils;
 pub mod models;
+mod utils;
 
 fn parse_scodoc_csv(csv_data: String) -> Result<Vec<IndexMap<String, String>>, String> {
     let columns_to_keep: HashSet<&str> = ["code_nip", "Nom", "Prénom"].into_iter().collect();
@@ -54,7 +54,10 @@ fn parse_scodoc_csv(csv_data: String) -> Result<Vec<IndexMap<String, String>>, S
         let name_a = a.get("Nom").map(String::as_str).unwrap_or("");
         let name_b = b.get("Nom").map(String::as_str).unwrap_or("");
 
-        name_a.cmp(name_b)
+        let first_a = a.get("Prénom").map(String::as_str).unwrap_or("");
+        let first_b = b.get("Prénom").map(String::as_str).unwrap_or("");
+
+        name_a.cmp(name_b).then_with(|| first_a.cmp(first_b))
     });
 
     filtered.retain(|row| row.get("Nom").map_or(false, |value| !value.is_empty()));

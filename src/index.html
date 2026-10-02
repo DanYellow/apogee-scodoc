@@ -10,7 +10,7 @@
 
     <body class="bg-gray-100 px-3 py-2">
         <main class="container mx-auto">
-            <header class="mb-2 flex justify-between">
+            <header class="mb-2 flex justify-between gap-3">
                 <h1 class="text-2xl font-bold">
                     Générateur de tableur pour macro Apogée
                 </h1>
@@ -42,7 +42,10 @@
                         >
                             Sélectionner un fichier
                         </button>
-                        <p class="bg-blue-100 border-blue-600 border border-solid rounded-xl p-2 opacity-0" id="export_apogee"></p>
+                        <p
+                            class="bg-blue-100 border-blue-600 border border-solid rounded-xl p-2 opacity-0"
+                            id="export_apogee"
+                        ></p>
                     </div>
                 </fieldset>
 
@@ -63,7 +66,10 @@
                         >
                             Sélectionner un fichier
                         </button>
-                        <p class="bg-blue-100 border-blue-600 border border-solid rounded-xl p-2 opacity-0" id="export_scodoc"></p>
+                        <p
+                            class="bg-blue-100 border-blue-600 border border-solid rounded-xl p-2 opacity-0"
+                            id="export_scodoc"
+                        ></p>
                     </div>
                 </fieldset>
                 <fieldset
@@ -82,8 +88,10 @@
                         />
                     </div>
                 </fieldset>
-                <footer class="flex flex-row justify-between">
-                    <button class="btn-primary" type="submit">Générer</button>
+                <footer class="flex flex-col sm:flex-row justify-between gap-3">
+                    <button class="btn-primary w-full" type="submit">
+                        Créer fichier d'export pour Apogée
+                    </button>
                     <button class="btn-secondary" type="reset">
                         Réinitialiser
                     </button>
@@ -187,7 +195,14 @@
                                     onglet</span
                                 >.
                             </p>
-                            <p>Le code nip est un code à huit chiffres unique à chaque étudiant. Ce code est dans la colonne "Numéro" dans le fichier de macro. Vous pouvez ajouter les colonnes de noms et prénoms pour vous aider, les ajouter ne nuira pas au fonctionnement de l'outil.</p>
+                            <p>
+                                Le code nip est un code à huit chiffres unique à
+                                chaque étudiant. Ce code est dans la colonne
+                                "Numéro" dans le fichier de macro. Vous pouvez
+                                ajouter les colonnes de noms et prénoms pour
+                                vous aider, les ajouter ne nuira pas au
+                                fonctionnement de l'outil.
+                            </p>
                             <p>
                                 Conformément à la procédure, ces étudiants
                                 verront la valeur "DEF" appliquée sur chaque UE
@@ -196,13 +211,33 @@
                         </li>
                         <li class="tab-content" data-tab-content="onglet-c">
                             <p>
-                                Le logiciel génère un fichier Excel composé de deux onglets :
+                                Le logiciel génère un fichier Excel composé de
+                                deux onglets :
                             </p>
                             <ol class="list-decimal list-inside">
-                                <li>Données pour Apogée : Contient l'ensemble des étudiants trouvés à la fois dans le fichier .TXT <span class="font-bold">et</span> le fichier Excel exporté depuis Scodoc dans une version adaptée pour le fichier macro d'Apogée</li>
-                                <li>Etudiants non trouvés : Contient l'ensemble des étudiants dont le code nip n'est pas présent dans le fichier .TXT</li>
+                                <li>
+                                    Données pour Apogée : Contient l'ensemble
+                                    des étudiants trouvés à la fois dans le
+                                    fichier .TXT
+                                    <span class="font-bold">et</span> le fichier
+                                    Excel exporté depuis Scodoc dans une version
+                                    adaptée pour le fichier macro d'Apogée
+                                </li>
+                                <li>
+                                    Etudiants non trouvés : Contient l'ensemble
+                                    des étudiants dont le code nip n'est pas
+                                    présent dans le fichier .TXT
+                                </li>
                             </ol>
-                            <p class="mt-3"><span class="font-bold">La source de vérité est le document .TXT </span> qui contient les codes nip des étudiants. Si un des codes n'est pas présent dans le document Excel de Scodoc, alors ces étudiants seront dans l'onglet "Etudiants non trouvés".</p>
+                            <p class="mt-3">
+                                <span class="font-bold"
+                                    >La source de vérité est le document .TXT
+                                </span>
+                                qui contient les codes nip des étudiants. Si un
+                                des codes n'est pas présent dans le document
+                                Excel de Scodoc, alors ces étudiants seront dans
+                                l'onglet "Etudiants non trouvés".
+                            </p>
                         </li>
                     </ul>
                 </div>
@@ -233,15 +268,20 @@
                     </svg>
                 </header>
 
-                <p>Fichier téléchargé</p>
+                <p>Le fichier "<span data-file-created="" class="font-bold"></span>" a été crée</p>
 
-                <button
-                    command="close"
-                    class="btn-secondary w-full"
-                    commandfor="start-download-dialog"
-                >
-                    Fermer
-                </button>
+                <footer class="flex flex-col gap-3 mt-3">
+                    <button class="btn-primary w-full" data-open-file="">
+                        Ouvrir le fichier crée
+                    </button>
+                    <button
+                        command="close"
+                        class="btn-secondary w-full"
+                        commandfor="start-download-dialog"
+                    >
+                        Fermer
+                    </button>
+                </footer>
             </div>
         </dialog>
     </body>
