@@ -8,6 +8,7 @@ const getFirstTabName = (tabList) => {
 }
 
 const openTab = (e) => {
+    e.target.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
     const currentTabContainer = e.target.closest('[role="tablist"]')
     currentTabContainer.querySelectorAll("[data-tab-content]").forEach((item) => {
         item.style.display = "none";

@@ -9,7 +9,6 @@
     border-radius: var(--radius-xl);
     padding-inline: --spacing(3);
     padding-block: --spacing(2.5);
-    width: fit-content;
     color: var(--color-white);
     text-align: center;
 
@@ -23,7 +22,6 @@
     border-radius: var(--radius-xl);
     padding-inline: --spacing(3);
     padding-block: --spacing(2.5);
-    width: fit-content;
     color: var(--color-black);
     text-align: center;
 
